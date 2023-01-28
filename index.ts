@@ -1,8 +1,10 @@
+import "reflect-metadata"
 import express, { Request, Response } from 'express';
 import { handleError } from './src/middleware/errorHandler';
 import { CustomError } from './src/middleware/error/customError';
 import morganLog from './src/middleware/logger/morgan';
 import logger from './src/middleware/logger/winston';
+import { AppDataSource } from './src/database/config/dataSource';
 
 const PORT: number = parseInt(process.env.PORT as string, 10) || 3000;
 const HOST: string = process.env.HOST || 'localhost';
@@ -12,6 +14,15 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(morganLog);
+
+//typeORM 설정 import
+AppDataSource.initialize()
+    .then(async () => {
+        logger.info("Data Source has been initialized!");
+    })
+    .catch((error) => {
+        logger.error("Error during Data Source initialization", error)
+    });
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello Express+TypeScript world!');
